@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薅羊毛记账本 - 攒皮肤基金</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --primary-dark: #5041c0;
+            --accent: #fd79a8;
+            --accent-light: #fab1d0;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+            --bg: #0f0f1a;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #22223a;
+            --bg-input: #252540;
+            --text: #e8e8f0;
+            --text-secondary: #9090b0;
+            --border: #2d2d50;
+            --gold: #f9ca24;
+            --gold-glow: rgba(249, 202, 36, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 顶部背景装饰 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(253, 121, 168, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--gold), var(--accent), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* 总览统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--gold), var(--warning)); }
+        .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+        .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), #55efc4); }
+        .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+        .stat-card:nth-child(5)::before { background: linear-gradient(90deg, #00cec9, #81ecec); }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.15);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card:nth-child(1) .stat-value { color: var(--gold); }
+        .stat-card:nth-child(2) .stat-value { color: var(--primary-light); }
+        .stat-card:nth-child(3) .stat-value { color: var(--success); }
+        .stat-card:nth-child(4) .stat-value { color: var(--accent); }
+        .stat-card:nth-child(5) .stat-value { color: #00cec9; }
+
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* 主要内容区域 - 双栏布局 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon {
+            font-size: 1.3rem;
+        }
+
+        /* 记账表单 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239090b0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .form-group select option {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* 皮肤心愿单 */
+        .skin-wish {
+            margin-bottom: 30px;
+        }
+
+        .wish-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .skin-purchase-summary {
+            margin: -6px 0 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .skin-purchase-summary .purchase-amount {
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .skin-sort-toggle {
+            display: flex;
+            gap: 8px;
+            margin: -6px 0 14px;
+            flex-wrap: wrap;
+        }
+
+        .skin-sort-btn {
+            padding: 6px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .skin-sort-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .wish-form input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .wish-form input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(253, 121, 168, 0.15);
+        }
+
+        .wish-form .btn-add-skin {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--accent), #e84393);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .wish-form .btn-add-skin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.3);
+        }
+
+        .skin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .skin-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .skin-item:hover {
+            border-color: var(--accent);
+        }
+
+        .skin-item.completed {
+            border-color: var(--success);
+            background: rgba(0, 184, 148, 0.05);
+        }
+
+        .skin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .skin-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .skin-item.completed .skin-name {
+            color: var(--success);
+        }
+
+        .skin-price {
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .skin-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .skin-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            background: linear-gradient(90deg, var(--accent), var(--primary-light));
+        }
+
+        .skin-item.completed .skin-progress-fill {
+            background: linear-gradient(90deg, var(--success), #55efc4);
+        }
+
+        .skin-progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .skin-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .skin-actions button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .skin-actions button:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        .skin-actions .btn-delete:hover {
+            color: var(--danger);
+            background: rgba(225, 112, 85, 0.15);
+            border-color: transparent;
+        }
+
+        .skin-actions .btn-purchased {
+            width: auto;
+            min-width: 80px;
+            padding: 0 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .skin-actions .btn-purchased.is-active {
+            background: rgba(0, 184, 148, 0.15);
+            color: var(--success);
+        }
+
+        .skin-item.completed .skin-badge {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .skin-item .skin-badge.skin-badge-purchased {
+            background: var(--primary);
+        }
+
+        /* 记录列表 */
+        .records-section {
+            margin-bottom: 30px;
+        }
+
+        .records-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .records-toolbar .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .record-item {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            transition: all 0.3s ease;
+            gap: 14px;
+        }
+
+        .record-item:hover {
+            border-color: var(--primary);
+            background: var(--bg-card-hover);
+        }
+
+        .record-platform-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .record-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .record-info .record-platform {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .record-info .record-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .record-amount {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .record-delete {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .record-delete:hover {
+            background: rgba(225, 112, 85, 0.15);
+            color: var(--danger);
+        }
+
+        /* 平台颜色映射 */
+        .platform-taobao { background: rgba(255, 107, 0, 0.15); color: #ff6b00; }
+        .platform-jd { background: rgba(232, 34, 14, 0.15); color: #e8220e; }
+        .platform-pdd { background: rgba(232, 64, 60, 0.15); color: #e8403c; }
+        .platform-meituan { background: rgba(255, 211, 51, 0.15); color: #ffd333; }
+        .platform-douyin { background: rgba(37, 244, 238, 0.12); color: #25f4ee; }
+        .platform-weixin { background: rgba(7, 193, 96, 0.15); color: #07c160; }
+        .platform-alipay { background: rgba(22, 119, 255, 0.15); color: #1677ff; }
+        .platform-yuanbao { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
+        .platform-doubao { background: rgba(139, 195, 74, 0.15); color: #8bc34a; }
+        .platform-other { background: rgba(160, 160, 200, 0.12); color: #a0a0c8; }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* 平台统计 */
+        .platform-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .platform-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            padding: 8px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .platform-stat-item:hover {
+            background: var(--bg-input);
+        }
+
+        .platform-stat-item .platform-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .platform-stat-item .platform-name {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .platform-stat-item .platform-amount {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--gold);
+        }
+
+        /* 平台悬浮详情弹出 */
+        .platform-popover {
+            display: none;
+            position: absolute;
+            left: calc(100% + 8px);
+            top: 0;
+            width: 300px;
+            max-height: 70vh;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            z-index: 50;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+        }
+
+        .platform-popover.visible {
+            display: block;
+        }
+
+        .platform-popover-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .platform-popover-title .pop-count {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .pop-record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pop-record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: var(--bg-input);
+            font-size: 0.82rem;
+        }
+
+        .pop-record-item .pop-date {
+            color: var(--text-secondary);
+        }
+
+        .pop-record-item .pop-note {
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pop-record-item .pop-amount {
+            color: var(--gold);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .pop-more {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            padding-top: 8px;
+        }
+
+        /* 移动端弹出层改为下方显示 */
+        @media (max-width: 768px) {
+            .platform-popover {
+                left: 0;
+                right: 0;
+                top: 100%;
+                transform: none;
+                width: auto;
+                margin-top: 4px;
+            }
+            .platform-popover.pop-left {
+                left: 0;
+                right: 0;
+            }
+        }
+
+        .platform-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .platform-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transition: width 0.6s ease;
+        }
+
+        /* Toast 通知 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .toast-error {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .pagination button {
+            padding: 6px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-actions .btn {
+            min-width: 100px;
+        }
+
+        .btn-cancel {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .edit-modal {
+            max-width: 480px;
+            text-align: left;
+        }
+
+        .edit-modal h3 {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .edit-modal .form-group {
+            margin-bottom: 14px;
+        }
+
+        .edit-modal .modal-actions {
+            justify-content: flex-end;
+        }
+
+        .record-edit {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .record-edit:hover {
+            background: rgba(108, 92, 231, 0.15);
+            color: var(--primary-light);
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* 数据管理 */
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .data-actions .btn-small {
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .data-actions .btn-small:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        .data-actions .btn-small.danger:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* 自定义平台输入 */
+        .custom-platform-input {
+            display: none;
+            margin-top: 8px;
+        }
+
+        .custom-platform-input.show {
+            display: block;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .container { padding: 12px; }
+            .skin-sort-btn { padding: 7px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>🐑 薅羊毛记账本</h1>
+            <p>每一毛都是攒皮肤的力量！</p>
+        </header>
+
+        <!-- 总览统计 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value" id="totalAmount">¥0.00</div>
+                <div class="stat-label">累计薅到</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">薅毛次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-value" id="monthAmount">¥0.00</div>
+                <div class="stat-label">本月薅到</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="skinProgress">0%</div>
+                <div class="stat-label">距下个皮肤</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-value" id="remainAmount">¥0.00</div>
+                <div class="stat-label">剩余可规划</div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <!-- 左侧：记账表单 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">✏️</span> 记一笔
+                </div>
+                <form id="recordForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>平台</label>
+                            <select id="platform" required>
+                                <option value="">选择平台</option>
+                                <option value="淘宝">🛒 淘宝</option>
+                                <option value="京东">🐕 京东</option>
+                                <option value="拼多多">🍊 拼多多</option>
+                                <option value="美团">🍜 美团</option>
+                                <option value="抖音">🎵 抖音</option>
+                                <option value="微信">💬 微信</option>
+                                <option value="支付宝">💙 支付宝</option>
+                                <option value="元宝" selected>🪙 元宝</option>
+                                <option value="豆包">🫘 豆包</option>
+                                <option value="custom">✨ 其他平台...</option>
+                            </select>
+                            <div class="custom-platform-input" id="customPlatformWrap">
+                                <input type="text" id="customPlatform" placeholder="输入平台名称" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>金额 (元)</label>
+                            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="recordDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>备注 (可选)</label>
+                        <textarea id="note" placeholder="例如：签到红包、优惠券、返现..." rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">💾 记录入账</button>
+                </form>
+            </div>
+
+            <!-- 右侧：平台统计 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📊</span> 平台排行
+                </div>
+                <div id="platformStats" class="platform-stats">
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>还没有数据哦~</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 皮肤心愿单 -->
+        <div class="card skin-wish">
+            <div class="card-title">
+                <span class="icon">🎮</span> 王者皮肤心愿单
+            </div>
+            <div class="wish-form">
+                <input type="text" id="skinName" placeholder="皮肤名称 (如：鲁班-星空梦想)" maxlength="30">
+                <input type="number" id="skinPrice" placeholder="价格 (点券)" step="1" min="1">
+                <button class="btn-add-skin" onclick="addSkin()">+ 添加心愿</button>
+            </div>
+            <div class="skin-purchase-summary" id="skinPurchaseSummary">
+                已购买 0 款 · 累计花费 <span class="purchase-amount">¥0.00</span>
+            </div>
+            <div class="skin-sort-toggle">
+                <button class="skin-sort-btn active" id="sortUnpurchasedFirstBtn" onclick="setSkinSort('unpurchased_first')">未购买置顶</button>
+                <button class="skin-sort-btn" id="sortPurchasedFirstBtn" onclick="setSkinSort('purchased_first')">已购买置顶</button>
+            </div>
+            <div class="skin-list" id="skinList">
+                <div class="empty-state">
+                    <div class="empty-icon">🎮</div>
+                    <p>添加你想要的王者皮肤，开始攒钱吧！<br><small style="color:var(--text-secondary)">提示：1元 ≈ 10点券</small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 记录列表 -->
+        <div class="card records-section">
+            <div class="records-toolbar">
+                <div class="card-title" style="margin-bottom:0">
+                    <span class="icon">📋</span> 薅毛记录
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all" onclick="filterRecords('all', this)">全部</button>
+                    <button class="filter-btn" data-filter="week" onclick="filterRecords('week', this)">本周</button>
+                    <button class="filter-btn" data-filter="month" onclick="filterRecords('month', this)">本月</button>
+                </div>
+            </div>
+            <div class="record-list" id="recordList">
+                <div class="empty-state">
+                    <div class="empty-icon">🐑</div>
+                    <p>还没有记录，快去薅一把！</p>
+                </div>
+            </div>
+            <div class="pagination" id="pagination" style="display:none"></div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="data-actions">
+            <button class="btn-small" onclick="exportData()">📤 导出数据</button>
+            <button class="btn-small" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
+            <button class="btn-small danger" onclick="confirmClearAll()">🗑️ 清空数据</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+
+        <footer class="footer">
+            ✨ 坚持薅毛，皮肤自来 ✨
+        </footer>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h3>⚠️ 确认删除</h3>
+            <p id="deleteModalMsg">确定要删除这条记录吗？</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑记录模态框 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal edit-modal">
+            <h3>✏️ 编辑记录</h3>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>平台</label>
+                    <select id="editPlatform" required>
+                        <option value="">选择平台</option>
+                        <option value="淘宝">🛒 淘宝</option>
+                        <option value="京东">🐕 京东</option>
+                        <option value="拼多多">🍊 拼多多</option>
+                        <option value="美团">🍜 美团</option>
+                        <option value="抖音">🎵 抖音</option>
+                        <option value="微信">💬 微信</option>
+                        <option value="支付宝">💙 支付宝</option>
+                        <option value="元宝">🪙 元宝</option>
+                        <option value="豆包">🫘 豆包</option>
+                        <option value="custom">✨ 其他平台...</option>
+                    </select>
+                    <div class="custom-platform-input" id="editCustomPlatformWrap">
+                        <input type="text" id="editCustomPlatform" placeholder="输入平台名称" maxlength="20">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>金额 (元)</label>
+                        <input type="number" id="editAmount" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="editDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注 (可选)</label>
+                    <textarea id="editNote" placeholder="例如：签到红包、优惠券、返现..." rows="2"></textarea>
+                </div>
+                <div class="modal-actions" style="margin-top: 16px;">
+                    <button type="button" class="btn btn-cancel" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn btn-primary" style="width:auto;margin-top:0">💾 保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 数据管理 =====
+        const STORAGE_KEY = 'wool_records';
+        const SKIN_STORAGE_KEY = 'wool_skins';
+        const SKIN_SORT_KEY = 'wool_skin_sort_mode';
+        const PAGE_SIZE = 8;
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let currentSkinSort = localStorage.getItem(SKIN_SORT_KEY) || 'unpurchased_first';
+
+        function getRecords() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch { return []; }
+        }
+
+        function saveRecords(records) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        function getSkins() {
+            try {
+                return JSON.parse(localStorage.getItem(SKIN_STORAGE_KEY)) || [];
+            } catch { return []; }
+        }
+
+        function saveSkins(skins) {
+            localStorage.setItem(SKIN_STORAGE_KEY, JSON.stringify(skins));
+        }
+
+        function saveSkinSortMode(mode) {
+            localStorage.setItem(SKIN_SORT_KEY, mode);
+        }
+
+        function setSkinSort(mode) {
+            if (!['unpurchased_first', 'purchased_first'].includes(mode)) return;
+            currentSkinSort = mode;
+            saveSkinSortMode(mode);
+            renderSkins();
+        }
+
+        // ===== 平台信息映射 =====
+        const platformMap = {
+            '淘宝': { icon: '🛒', class: 'platform-taobao' },
+            '京东': { icon: '🐕', class: 'platform-jd' },
+            '拼多多': { icon: '🍊', class: 'platform-pdd' },
+            '美团': { icon: '🍜', class: 'platform-meituan' },
+            '抖音': { icon: '🎵', class: 'platform-douyin' },
+            '微信': { icon: '💬', class: 'platform-weixin' },
+            '支付宝': { icon: '💙', class: 'platform-alipay' },
+            '元宝': { icon: '🪙', class: 'platform-yuanbao' },
+            '豆包': { icon: '🫘', class: 'platform-doubao' },
+        };
+
+        function getPlatformInfo(name) {
+            return platformMap[name] || { icon: '✨', class: 'platform-other' };
+        }
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // 设置默认日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('recordDate').value = today;
+
+            // 平台选择变化
+            document.getElementById('platform').addEventListener('change', function() {
+                const wrap = document.getElementById('customPlatformWrap');
+                if (this.value === 'custom') {
+                    wrap.classList.add('show');
+                    document.getElementById('customPlatform').focus();
+                } else {
+                    wrap.classList.remove('show');
+                }
+            });
+
+            // 表单提交
+            document.getElementById('recordForm').addEventListener('submit', addRecord);
+
+            // 渲染
+            renderAll();
+        });
+
+        // ===== 添加记录 =====
+        function addRecord(e) {
+            e.preventDefault();
+
+            let platform = document.getElementById('platform').value;
+            if (platform === 'custom') {
+                platform = document.getElementById('customPlatform').value.trim();
+                if (!platform) {
+                    showToast('请输入平台名称', 'error');
+                    return;
+                }
+            }
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('recordDate').value;
+            const note = document.getElementById('note').value.trim();
+
+            if (!platform || !amount || !date) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+
+            const record = {
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                platform,
+                amount,
+                date,
+                note,
+                createdAt: new Date().toISOString()
+            };
+
+            const records = getRecords();
+            records.unshift(record);
+            saveRecords(records);
+
+            // 重置表单
+            document.getElementById('recordForm').reset();
+            document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('customPlatformWrap').classList.remove('show');
+
+            showToast(`记录成功！薅到 ¥${amount.toFixed(2)} 🎉`, 'success');
+            currentPage = 1;
+            renderAll();
+        }
+
+        // ===== 删除记录 =====
+        function deleteRecord(id) {
+            document.getElementById('deleteModalMsg').textContent = '确定要删除这条记录吗？';
+            document.getElementById('deleteModal').classList.add('show');
+            document.getElementById('confirmDeleteBtn').onclick = () => {
+                const records = getRecords().filter(r => r.id !== id);
+                saveRecords(records);
+                closeModal();
+                showToast('记录已删除', 'success');
+                renderAll();
+            };
+        }
+
+        // ===== 编辑记录 =====
+        let editingId = null;
+
+        function editRecord(id) {
+            const records = getRecords();
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+
+            editingId = id;
+
+            // 判断平台是否为预设选项
+            const presetPlatforms = ['淘宝', '京东', '拼多多', '美团', '抖音', '微信', '支付宝', '元宝', '豆包'];
+            const editPlatformEl = document.getElementById('editPlatform');
+            const editCustomWrap = document.getElementById('editCustomPlatformWrap');
+            const editCustomInput = document.getElementById('editCustomPlatform');
+
+            if (presetPlatforms.includes(record.platform)) {
+                editPlatformEl.value = record.platform;
+                editCustomWrap.classList.remove('show');
+                editCustomInput.value = '';
+            } else {
+                editPlatformEl.value = 'custom';
+                editCustomWrap.classList.add('show');
+                editCustomInput.value = record.platform;
+            }
+
+            document.getElementById('editAmount').value = record.amount;
+            document.getElementById('editDate').value = record.date;
+            document.getElementById('editNote').value = record.note || '';
+            document.getElementById('editId').value = id;
+
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+            editingId = null;
+        }
+
+        // 编辑模态框中平台选择变化
+        document.getElementById('editPlatform').addEventListener('change', function() {
+            const wrap = document.getElementById('editCustomPlatformWrap');
+            if (this.value === 'custom') {
+                wrap.classList.add('show');
+                document.getElementById('editCustomPlatform').focus();
+            } else {
+                wrap.classList.remove('show');
+            }
+        });
+
+        // 编辑模态框点击外部关闭
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+
+        // 编辑表单提交
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            let platform = document.getElementById('editPlatform').value;
+            if (platform === 'custom') {
+                platform = document.getElementById('editCustomPlatform').value.trim();
+                if (!platform) {
+                    showToast('请输入平台名称', 'error');
+                    return;
+                }
+            }
+
+            const amount = parseFloat(document.getElementById('editAmount').value);
+            const date = document.getElementById('editDate').value;
+            const note = document.getElementById('editNote').value.trim();
+            const id = document.getElementById('editId').value;
+
+            if (!platform || !amount || !date) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+
+            const records = getRecords();
+            const index = records.findIndex(r => r.id === id);
+            if (index === -1) {
+                showToast('记录不存在', 'error');
+                closeEditModal();
+                return;
+            }
+
+            records[index].platform = platform;
+            records[index].amount = amount;
+            records[index].date = date;
+            records[index].note = note;
+            saveRecords(records);
+
+            closeEditModal();
+            showToast('修改成功 ✅', 'success');
+            renderAll();
+        });
+
+        // ===== 皮肤心愿单 =====
+        function addSkin() {
+            const name = document.getElementById('skinName').value.trim();
+            const price = parseInt(document.getElementById('skinPrice').value);
+
+            if (!name || !price) {
+                showToast('请输入皮肤名称和价格', 'error');
+                return;
+            }
+
+            const skin = {
+                id: Date.now().toString(36),
+                name,
+                price, // 点券
+                purchased: false,
+                purchasedAt: null,
+                createdAt: new Date().toISOString()
+            };
+
+            const skins = getSkins();
+            skins.push(skin);
+            saveSkins(skins);
+
+            document.getElementById('skinName').value = '';
+            document.getElementById('skinPrice').value = '';
+
+            showToast(`已添加心愿：${name}`, 'success');
+            renderAll();
+        }
+
+        function toggleSkinPurchased(id) {
+            const skins = getSkins();
+            const index = skins.findIndex(s => s.id === id);
+            if (index === -1) return;
+
+            const current = skins[index];
+            const nextPurchased = !current.purchased;
+            skins[index] = {
+                ...current,
+                purchased: nextPurchased,
+                purchasedAt: nextPurchased ? new Date().toISOString() : null
+            };
+            saveSkins(skins);
+            showToast(nextPurchased ? '已标记为已购买' : '已取消购买标记', 'success');
+            renderAll();
+        }
+
+        function deleteSkin(id) {
+            document.getElementById('deleteModalMsg').textContent = '确定要删除这个皮肤心愿吗？';
+            document.getElementById('deleteModal').classList.add('show');
+            document.getElementById('confirmDeleteBtn').onclick = () => {
+                const skins = getSkins().filter(s => s.id !== id);
+                saveSkins(skins);
+                closeModal();
+                showToast('心愿已删除', 'success');
+                renderAll();
+            };
+        }
+
+        // ===== 渲染 =====
+        function renderAll() {
+            renderStats();
+            renderSkins();
+            renderRecords();
+            renderPlatformStats();
+        }
+
+        // 统计渲染
+        function renderStats() {
+            const records = getRecords();
+            const total = records.reduce((s, r) => s + r.amount, 0);
+            const count = records.length;
+
+            // 本月
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthAmount = records
+                .filter(r => new Date(r.date) >= monthStart)
+                .reduce((s, r) => s + r.amount, 0);
+
+            document.getElementById('totalAmount').textContent = `¥${total.toFixed(2)}`;
+            document.getElementById('totalCount').textContent = count;
+            document.getElementById('monthAmount').textContent = `¥${monthAmount.toFixed(2)}`;
+
+            // 计算距离下一个未购买皮肤的进度（先扣除已购买花费）
+            const skins = getSkins();
+            const totalYuan = total; // 总计人民币
+            const purchasedAmount = skins
+                .filter(s => s.purchased)
+                .reduce((s, sk) => s + sk.price / 10, 0);
+            const planningBudget = Math.max(0, totalYuan - purchasedAmount);
+            const pendingSkins = skins.filter(s => !s.purchased);
+            let usedYuan = 0;
+            let nextSkin = null;
+
+            for (const skin of pendingSkins) {
+                const skinYuan = skin.price / 10; // 点券转换为元
+                if (usedYuan + skinYuan <= planningBudget) {
+                    usedYuan += skinYuan;
+                } else {
+                    nextSkin = skin;
+                    break;
+                }
+            }
+
+            if (nextSkin) {
+                const skinYuan = nextSkin.price / 10;
+                const remaining = planningBudget - usedYuan;
+                const progress = Math.min(100, (remaining / skinYuan) * 100);
+                document.getElementById('skinProgress').textContent = `${progress.toFixed(0)}%`;
+            } else if (pendingSkins.length > 0) {
+                document.getElementById('skinProgress').textContent = '🎉';
+            } else {
+                document.getElementById('skinProgress').textContent = '--';
+            }
+
+            // 剩余可规划 = 总金额 - 所有皮肤心愿总价
+            const allSkinsYuan = skins.reduce((s, sk) => s + sk.price / 10, 0);
+            const remainAmount = totalYuan - allSkinsYuan;
+            const remainEl = document.getElementById('remainAmount');
+            remainEl.textContent = `¥${remainAmount.toFixed(2)}`;
+            remainEl.style.color = remainAmount >= 0 ? '#00cec9' : 'var(--danger)';
+        }
+
+        // 皮肤列表渲染
+        function renderSkins() {
+            const skins = getSkins();
+            const container = document.getElementById('skinList');
+            const summaryEl = document.getElementById('skinPurchaseSummary');
+            const sortUnpurchasedFirstBtn = document.getElementById('sortUnpurchasedFirstBtn');
+            const sortPurchasedFirstBtn = document.getElementById('sortPurchasedFirstBtn');
+            const totalYuan = getRecords().reduce((s, r) => s + r.amount, 0);
+            const purchasedSkins = skins.filter(s => s.purchased);
+            const purchasedAmount = purchasedSkins.reduce((sum, s) => sum + s.price / 10, 0);
+            const planningBudget = Math.max(0, totalYuan - purchasedAmount);
+            const pendingCount = skins.length - purchasedSkins.length;
+
+            summaryEl.innerHTML = `已购买 ${purchasedSkins.length} 款 · 累计花费 <span class="purchase-amount">¥${purchasedAmount.toFixed(2)}</span> · 待购买 ${pendingCount} 款`;
+
+            if (skins.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎮</div>
+                        <p>添加你想要的王者皮肤，开始攒钱吧！<br><small style="color:var(--text-secondary)">提示：1元 ≈ 10点券</small></p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (currentSkinSort === 'purchased_first') {
+                sortPurchasedFirstBtn.classList.add('active');
+                sortUnpurchasedFirstBtn.classList.remove('active');
+            } else {
+                sortUnpurchasedFirstBtn.classList.add('active');
+                sortPurchasedFirstBtn.classList.remove('active');
+            }
+
+            const sortedSkins = currentSkinSort === 'purchased_first'
+                ? [...purchasedSkins, ...skins.filter(s => !s.purchased)]
+                : [...skins.filter(s => !s.purchased), ...purchasedSkins];
+
+            let usedYuan = 0;
+            let html = '';
+
+            for (const skin of sortedSkins) {
+                const skinYuan = skin.price / 10;
+                const isPurchased = !!skin.purchased;
+                let funded = 0;
+                let progress = 0;
+                let isCompleted = false;
+
+                if (isPurchased) {
+                    // 已购买不再占用“待购买预算”，直接视为完成
+                    funded = skinYuan;
+                    progress = 100;
+                    isCompleted = true;
+                } else {
+                    // 待购买进度基于“总入账 - 已购买花费”
+                    const available = planningBudget - usedYuan;
+                    funded = Math.min(skinYuan, Math.max(0, available));
+                    progress = (funded / skinYuan) * 100;
+                    isCompleted = progress >= 100;
+
+                    if (isCompleted) usedYuan += skinYuan;
+                }
+
+                html += `
+                    <div class="skin-item ${isCompleted ? 'completed' : ''} animate-in">
+                        <div class="skin-header">
+                            <span class="skin-name">
+                                ${isCompleted ? '✅' : '🎮'} ${skin.name}
+                                ${isCompleted ? '<span class="skin-badge">已达成</span>' : ''}
+                                ${isPurchased ? '<span class="skin-badge skin-badge-purchased">已购买</span>' : ''}
+                            </span>
+                            <span class="skin-price">${skin.price} 点券 (¥${skinYuan.toFixed(0)})</span>
+                            <div class="skin-actions">
+                                <button class="btn-purchased ${isPurchased ? 'is-active' : ''}" onclick="toggleSkinPurchased('${skin.id}')" title="${isPurchased ? '取消已购买' : '标记为已购买'}">
+                                    ${isPurchased ? '已购买' : '标记已购'}
+                                </button>
+                                <button class="btn-delete" onclick="deleteSkin('${skin.id}')" title="删除">✕</button>
+                            </div>
+                        </div>
+                        <div class="skin-progress-bar">
+                            <div class="skin-progress-fill" style="width: ${Math.min(100, progress).toFixed(1)}%"></div>
+                        </div>
+                        <div class="skin-progress-text">
+                            <span>${isPurchased ? `已花 ¥${skinYuan.toFixed(2)}` : `已攒 ¥${funded.toFixed(2)}`}</span>
+                            <span>${isPurchased ? '🧾 已计入花销' : (isCompleted ? '🎉 可以买啦！' : `还差 ¥${(skinYuan - funded).toFixed(2)}`)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // 记录列表渲染
+        function renderRecords() {
+            let records = getRecords();
+            const container = document.getElementById('recordList');
+            const paginationEl = document.getElementById('pagination');
+
+            // 过滤
+            if (currentFilter === 'week') {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                records = records.filter(r => new Date(r.date) >= weekAgo);
+            } else if (currentFilter === 'month') {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                records = records.filter(r => new Date(r.date) >= monthStart);
+            }
+
+            // 排序：按日期降序
+            records.sort((a, b) => new Date(b.date) - new Date(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🐑</div>
+                        <p>${currentFilter === 'all' ? '还没有记录，快去薅一把！' : '这段时间还没有记录哦~'}</p>
+                    </div>
+                `;
+                paginationEl.style.display = 'none';
+                return;
+            }
+
+            // 分页
+            const totalPages = Math.ceil(records.length / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageRecords = records.slice(start, start + PAGE_SIZE);
+
+            let html = '';
+            for (const r of pageRecords) {
+                const info = getPlatformInfo(r.platform);
+                html += `
+                    <div class="record-item animate-in">
+                        <div class="record-platform-icon ${info.class}">${info.icon}</div>
+                        <div class="record-info">
+                            <div class="record-platform">${r.platform}</div>
+                            <div class="record-meta">
+                                <span>📅 ${r.date}</span>
+                                ${r.note ? `<span>💬 ${r.note}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="record-amount">+¥${r.amount.toFixed(2)}</div>
+                        <button class="record-edit" onclick="editRecord('${r.id}')" title="编辑">✏️</button>
+                        <button class="record-delete" onclick="deleteRecord('${r.id}')" title="删除">🗑️</button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            // 分页控件
+            if (totalPages > 1) {
+                paginationEl.style.display = 'flex';
+                paginationEl.innerHTML = `
+                    <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">‹ 上一页</button>
+                    <span class="page-info">${currentPage} / ${totalPages}</span>
+                    <button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">下一页 ›</button>
+                `;
+            } else {
+                paginationEl.style.display = 'none';
+            }
+        }
+
+        // 平台统计
+        function renderPlatformStats() {
+            const records = getRecords();
+            const container = document.getElementById('platformStats');
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>还没有数据哦~</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 汇总
+            const stats = {};
+            const platformRecords = {};
+            for (const r of records) {
+                if (!stats[r.platform]) {
+                    stats[r.platform] = 0;
+                    platformRecords[r.platform] = [];
+                }
+                stats[r.platform] += r.amount;
+                platformRecords[r.platform].push(r);
+            }
+
+            // 每个平台的记录按日期降序排列
+            for (const key of Object.keys(platformRecords)) {
+                platformRecords[key].sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
+
+            // 排序
+            const sorted = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+            const maxAmount = sorted[0][1];
+            let html = '';
+            for (const [platform, amount] of sorted) {
+                const info = getPlatformInfo(platform);
+                const pct = (amount / maxAmount) * 100;
+                const pRecords = platformRecords[platform] || [];
+
+                let popHtml = `<div class="platform-popover-title">
+                    <span>${info.icon} ${platform}</span>
+                    <span class="pop-count">共 ${pRecords.length} 条 · ¥${amount.toFixed(2)}</span>
+                </div><div class="pop-record-list">`;
+
+                for (const r of pRecords) {
+                    popHtml += `<div class="pop-record-item">
+                        <span class="pop-date">${r.date}</span>
+                        ${r.note ? `<span class="pop-note" title="${r.note}">${r.note}</span>` : '<span></span>'}
+                        <span class="pop-amount">+¥${r.amount.toFixed(2)}</span>
+                    </div>`;
+                }
+
+                popHtml += '</div>';
+
+                html += `
+                    <div class="platform-stat-item">
+                        <div class="platform-icon ${info.class}">${info.icon}</div>
+                        <span class="platform-name">${platform}</span>
+                        <div class="platform-bar-bg">
+                            <div class="platform-bar-fill" style="width: ${pct.toFixed(1)}%"></div>
+                        </div>
+                        <span class="platform-amount">¥${amount.toFixed(2)}</span>
+                        <div class="platform-popover">${popHtml}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+            bindPopoverEvents();
+        }
+
+        // 弹出层鼠标交互
+        let popoverTimer = null;
+
+        function bindPopoverEvents() {
+            document.querySelectorAll('.platform-stat-item').forEach(item => {
+                const popover = item.querySelector('.platform-popover');
+                if (!popover) return;
+
+                item.addEventListener('mouseenter', () => {
+                    clearTimeout(popoverTimer);
+                    // 先关闭其他弹出层
+                    document.querySelectorAll('.platform-popover.visible').forEach(p => p.classList.remove('visible'));
+                    popover.classList.add('visible');
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    popoverTimer = setTimeout(() => {
+                        popover.classList.remove('visible');
+                    }, 150);
+                });
+
+                popover.addEventListener('mouseenter', () => {
+                    clearTimeout(popoverTimer);
+                });
+
+                popover.addEventListener('mouseleave', () => {
+                    popoverTimer = setTimeout(() => {
+                        popover.classList.remove('visible');
+                    }, 150);
+                });
+            });
+        }
+
+        // ===== 筛选 & 分页 =====
+        function filterRecords(filter, btn) {
+            currentFilter = filter;
+            currentPage = 1;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderRecords();
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderRecords();
+            // 滚动到记录区域
+            document.querySelector('.records-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ===== 数据导入导出 =====
+        function exportData() {
+            const data = {
+                records: getRecords(),
+                skins: getSkins(),
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `薅羊毛记账-${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('数据已导出', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.records) {
+                        const existing = getRecords();
+                        const existingIds = new Set(existing.map(r => r.id));
+                        const newRecords = data.records.filter(r => !existingIds.has(r.id));
+                        saveRecords([...newRecords, ...existing]);
+                    }
+                    if (data.skins) {
+                        const existing = getSkins();
+                        const existingIds = new Set(existing.map(s => s.id));
+                        const newSkins = data.skins.filter(s => !existingIds.has(s.id));
+                        saveSkins([...existing, ...newSkins]);
+                    }
+                    showToast('数据导入成功！', 'success');
+                    renderAll();
+                } catch (err) {
+                    showToast('导入失败：文件格式错误', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmClearAll() {
+            document.getElementById('deleteModalMsg').textContent = '确定要清空所有数据吗？此操作不可恢复！';
+            document.getElementById('deleteModal').classList.add('show');
+            document.getElementById('confirmDeleteBtn').onclick = () => {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(SKIN_STORAGE_KEY);
+                closeModal();
+                showToast('数据已清空', 'success');
+                currentPage = 1;
+                renderAll();
+            };
+        }
+
+        // ===== 模态框 =====
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ===== Toast =====
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast toast-${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+    </script>
+</body>
+</html>

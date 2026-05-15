@@ -1,0 +1,1601 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>洛克王国污染记录页</title>
+    <style>
+        :root {
+            --bg-1: #f5f9ff;
+            --bg-2: #eef2ff;
+            --panel: rgba(255, 255, 255, 0.9);
+            --text: #3a2f59;
+            --muted: #7e73a7;
+            --gold: #ffd25f;
+            --gold-deep: #ffbd3b;
+            --purple: #8d7cff;
+            --pink: #ff79b7;
+            --border: #ddd8ff;
+            --ok: #2a9d6f;
+            --danger: #e85a84;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 15%, #fff5db 0, transparent 28%),
+                radial-gradient(circle at 80% 25%, #ffe9fb 0, transparent 26%),
+                radial-gradient(circle at 70% 75%, #e4f3ff 0, transparent 34%),
+                linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            padding: 24px 14px 40px;
+        }
+
+        .shell {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .title-card {
+            background: linear-gradient(140deg, #fffef7 0%, #fff8ea 100%);
+            border: 2px solid #ffe8a8;
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(115, 81, 33, 0.12);
+            padding: 20px 18px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            letter-spacing: 0.4px;
+        }
+
+        .desc {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .star {
+            color: #f5a11c;
+            margin-right: 4px;
+        }
+
+        .stats {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 13px;
+            border: 1px solid #e6dcff;
+            background: #f7f4ff;
+            color: #5f4c8c;
+        }
+
+        .badge.total {
+            border-color: #ffe1a1;
+            background: #fff7df;
+            color: #8c5d13;
+            font-weight: 700;
+        }
+
+        .panel + .panel {
+            margin-top: 14px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 10px 24px rgba(121, 103, 215, 0.12);
+            padding: 16px;
+        }
+
+        .create-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            border: 1px solid #d8d0ff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--text);
+            background: #fff;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #baabff;
+            box-shadow: 0 0 0 3px rgba(173, 148, 255, 0.24);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            border: 1px solid #d8d0ff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--text);
+            background: #fff;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #baabff;
+            box-shadow: 0 0 0 3px rgba(173, 148, 255, 0.24);
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            opacity: 0.92;
+            transform: translateY(0);
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--purple) 0%, #7862ff 100%);
+            box-shadow: 0 8px 14px rgba(120, 98, 255, 0.26);
+        }
+
+        .btn-minus {
+            background: linear-gradient(135deg, #ff8ab8 0%, var(--danger) 100%);
+            box-shadow: 0 8px 14px rgba(232, 90, 132, 0.25);
+            min-width: 42px;
+        }
+
+        .btn-plus {
+            background: linear-gradient(135deg, #43c792 0%, var(--ok) 100%);
+            box-shadow: 0 8px 14px rgba(42, 157, 111, 0.25);
+            min-width: 42px;
+        }
+
+        .btn-ghost {
+            background: linear-gradient(135deg, #f6b845 0%, var(--gold-deep) 100%);
+            box-shadow: 0 8px 14px rgba(255, 189, 59, 0.26);
+        }
+
+        .list {
+            margin: 14px 0 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 10px;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #e7e0ff;
+            border-radius: 14px;
+            padding: 10px;
+            background: linear-gradient(180deg, #fff 0%, #fbf9ff 100%);
+        }
+
+        .name {
+            font-weight: 600;
+        }
+
+        .count {
+            min-width: 64px;
+            text-align: center;
+            color: #5f4c8c;
+            font-weight: 700;
+            border: 1px solid #ddd3ff;
+            background: #f7f3ff;
+            border-radius: 999px;
+            padding: 7px 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            margin: 12px 0 4px;
+            color: var(--muted);
+            font-size: 14px;
+            padding: 14px;
+            border: 1px dashed #d9cffd;
+            border-radius: 12px;
+            background: #faf8ff;
+        }
+
+        .panel-title {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+
+        .sub-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            margin-top: 10px;
+        }
+
+        .select {
+            width: 100%;
+            border: 1px solid #d8d0ff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--text);
+            background: #fff;
+            outline: none;
+        }
+
+        .select:focus {
+            border-color: #baabff;
+            box-shadow: 0 0 0 3px rgba(173, 148, 255, 0.24);
+        }
+
+        .tiny-card {
+            border: 1px solid #e7e0ff;
+            border-radius: 12px;
+            padding: 10px;
+            background: #fcfbff;
+            font-size: 13px;
+            color: #67558f;
+        }
+
+        .stat-group {
+            margin-top: 10px;
+            border: 1px solid #ddd9ff;
+            border-radius: 14px;
+            padding: 10px;
+        }
+
+        .stat-group.target {
+            background: #f6f2ff;
+            border-color: #d6cbff;
+        }
+
+        .stat-group.other {
+            background: #f2fbff;
+            border-color: #cbe8ff;
+        }
+
+        .stat-title {
+            margin: 0 0 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .stat-group.target .stat-title {
+            color: #5e49a8;
+        }
+
+        .stat-group.other .stat-title {
+            color: #2b6fa1;
+        }
+
+        .log-list {
+            margin-top: 12px;
+            max-height: 220px;
+            overflow: auto;
+            border: 1px solid #e6deff;
+            border-radius: 12px;
+            padding: 8px;
+            background: #fdfcff;
+        }
+
+        .log-item {
+            font-size: 13px;
+            padding: 7px 8px;
+            border-radius: 10px;
+            background: #f7f3ff;
+            border: 1px solid #e8e0ff;
+            margin-bottom: 8px;
+        }
+
+        .other-detail-list {
+            margin-top: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .quick-panel {
+            margin-top: 10px;
+            border: 1px solid #ddd9ff;
+            border-radius: 14px;
+            padding: 10px;
+            background: #f9f6ff;
+        }
+
+        .quick-title {
+            margin: 0 0 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #5e49a8;
+        }
+
+        .quick-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .quick-row strong {
+            min-width: 78px;
+            font-size: 13px;
+        }
+
+        .quick-btn {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+
+        .target-list {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .target-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #dacfff;
+            background: #f8f4ff;
+            font-size: 13px;
+        }
+
+        .target-pill button {
+            padding: 4px 8px;
+            font-size: 12px;
+            line-height: 1;
+            min-width: auto;
+        }
+
+        .field-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: var(--muted);
+            padding-left: 2px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .history-card {
+            border: 1px solid #ddd9ff;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: #fdfcff;
+        }
+
+        .history-card h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: #4a3d6e;
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 640px) {
+            .item {
+                grid-template-columns: 1fr;
+            }
+
+            .count,
+            .actions {
+                justify-self: start;
+            }
+
+            .create-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <section class="title-card">
+        <h1><span class="star">★</span>洛克王国污染记录</h1>
+        <p class="desc">按污染种类记录刷出数量，方便你随时查看进度。</p>
+        <div class="stats">
+            <span class="badge">污染种类：<strong id="typeCount">0</strong></span>
+            <span class="badge total">总抓取次数：<strong id="totalCount">0</strong></span>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2 class="panel-title">异色追踪模块</h2>
+        <p class="desc">维护多个主刷宠物，并记录过程中遇到的噩梦 / 污染 / 普通 / 异色突发（主刷或其他）。</p>
+        <div class="create-row" style="margin-top: 10px;">
+            <input id="targetInput" type="text" placeholder="新增主刷宠物，支持逗号分隔，如：月牙雪熊，恶魔狼" />
+            <button id="setTargetBtn" class="btn-main">批量添加主刷</button>
+        </div>
+        <div id="targetList" class="target-list"></div>
+
+        <div class="stats">
+            <span class="badge">当前选中主刷：<strong id="targetName">未设置</strong></span>
+            <span class="badge">当前主刷数：<strong id="activeTargetCount">0</strong></span>
+            <span class="badge">主刷数量：<strong id="targetCount">0</strong></span>
+            <span class="badge">总事件：<strong id="eventTotal">0</strong></span>
+        </div>
+        <div class="footer" style="margin-top: 10px;">
+            <span>本轮结束后可归档到下方历史记录，并开始新一轮计数。</span>
+            <button id="completePlanBtn" class="btn-main">本次捕捉计划完成</button>
+        </div>
+
+        <div class="stat-group other" style="margin-top: 14px;">
+            <p class="stat-title">用球记录</p>
+            <p class="desc" style="margin: 0 0 10px;">记录本轮用了哪些球、各用了多少个（与异色追踪数据一起保存）。列表里可直接输入数量，也可用 + / - 微调。</p>
+            <div class="stats">
+                <span class="badge total">用球合计：<strong id="ballTotalAll">0</strong></span>
+            </div>
+            <div class="create-row" style="margin-top: 8px;">
+                <input id="ballInput" type="text" placeholder="球种名称，支持逗号分隔，如：超级咕噜球，国王球" />
+                <button id="addBallBtn" class="btn-main">添加 / +1</button>
+            </div>
+            <ul id="ballList" class="list"></ul>
+            <p id="ballEmptyTip" class="empty">还没有用球记录，先添加球种。</p>
+            <div class="footer">
+                <span>提示：同名球会累加数量；列表中可手动改数量；点 - 不会减到 0 以下。</span>
+                <button id="clearBallsBtn" class="btn-ghost">清空用球记录</button>
+            </div>
+        </div>
+
+        <div class="sub-grid">
+            <div class="field-wrap">
+                <label class="field-label" for="scopeSelect">记录场景</label>
+                <select id="scopeSelect" class="select">
+                    <option value="target">主刷宠物</option>
+                    <option value="other">其他宠物</option>
+                </select>
+            </div>
+            <div id="targetSelectWrap" class="field-wrap">
+                <label class="field-label" for="targetSelect">主刷目标</label>
+                <select id="targetSelect" class="select">
+                    <option value="">选择主刷宠物（记录主刷事件时用）</option>
+                </select>
+            </div>
+            <div id="otherPetWrap" class="field-wrap">
+                <label class="field-label" for="eventPetInput">其他宠物名</label>
+                <input id="eventPetInput" type="text" placeholder="请输入其他宠物名称" />
+            </div>
+            <div class="field-wrap">
+                <label class="field-label" for="eventTypeSelect">事件类型</label>
+                <select id="eventTypeSelect" class="select">
+                    <option value="pollution">污染</option>
+                    <option value="normal">普通</option>
+                    <option value="shiny">异色突发（中间记录）</option>
+                </select>
+            </div>
+            <div id="shinyNightmareWrap" class="field-wrap">
+                <label class="field-label" for="shinyNightmareInput">异色时噩梦次数</label>
+                <input id="shinyNightmareInput" type="number" min="0" step="1" placeholder="可留空" />
+            </div>
+            <button id="addEventBtn" class="btn-plus">记录这次事件</button>
+        </div>
+
+        <div class="quick-panel">
+            <p class="quick-title">主刷快捷记录（点一下直接 +1）</p>
+            <div id="quickTargetActions"></div>
+        </div>
+
+        <div class="stat-group target">
+            <p class="stat-title">主刷统计</p>
+            <div class="sub-grid">
+                <div class="tiny-card">主刷-噩梦（自动）：<strong id="targetNightmare">0</strong></div>
+                <div class="tiny-card">主刷-污染：<strong id="targetPollution">0</strong></div>
+                <div class="tiny-card">主刷-普通：<strong id="targetNormal">0</strong></div>
+                <div class="tiny-card">主刷-异色：<strong id="targetShiny">0</strong></div>
+            </div>
+            <div id="targetDetailList" class="other-detail-list"></div>
+        </div>
+
+        <div class="stat-group other">
+            <p class="stat-title">其他统计</p>
+            <div class="sub-grid">
+                <div class="tiny-card">其他-噩梦（自动）：<strong id="otherNightmare">0</strong></div>
+                <div class="tiny-card">其他-污染：<strong id="otherPollution">0</strong></div>
+                <div class="tiny-card">其他-普通：<strong id="otherNormal">0</strong></div>
+                <div class="tiny-card">其他-异色：<strong id="otherShiny">0</strong></div>
+            </div>
+            <div class="quick-panel">
+                <p class="quick-title">其他快捷记录（点一下直接 +1）</p>
+                <div id="quickOtherActions"></div>
+            </div>
+            <div id="otherDetailList" class="other-detail-list"></div>
+        </div>
+
+        <div class="footer">
+            <span>中间记录：异色突发（总计 <strong id="shinyTotal">0</strong>）</span>
+        </div>
+        <div id="shinyLogList" class="log-list"></div>
+
+        <div class="footer">
+            <span>最近事件（最多展示 40 条）</span>
+            <div class="footer-actions">
+                <button id="undoBtn" class="btn-ghost">撤回上一步</button>
+                <button id="clearEventsBtn" class="btn-ghost">清空事件记录</button>
+            </div>
+        </div>
+        <div id="eventLogList" class="log-list"></div>
+    </section>
+
+    <section class="panel">
+        <h2 class="panel-title">历史记录</h2>
+        <p class="desc">每次点击「本次捕捉计划完成」时，会把当前轮的主刷统计、其他统计、用球记录与明细快照保存到这里，并清空本轮事件与用球计数。</p>
+        <div id="historyList"></div>
+    </section>
+
+    <section class="panel global-actions">
+        <div class="footer" style="margin-top: 0;">
+            <span>数据备份与管理</span>
+            <div class="footer-actions">
+                <button id="exportBtn" class="btn-ghost">导出备份</button>
+                <button id="importBtn" class="btn-ghost">导入备份</button>
+                <button id="clearCacheBtn" class="btn-ghost">清理本地缓存</button>
+                <button id="clearBtn" class="btn-ghost">清空所有记录</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const STORAGE_KEY = "pollution-tracker-data";
+    const EVENT_STORAGE_KEY = "pollution-event-tracker-data";
+    const UNDO_STORAGE_KEY = "pollution-undo-stack-data";
+    const HISTORY_STORAGE_KEY = "pollution-session-history-data";
+
+    const clearBtn = document.getElementById("clearBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const clearCacheBtn = document.getElementById("clearCacheBtn");
+    const typeCount = document.getElementById("typeCount");
+    const totalCount = document.getElementById("totalCount");
+    const targetInput = document.getElementById("targetInput");
+    const setTargetBtn = document.getElementById("setTargetBtn");
+    const targetList = document.getElementById("targetList");
+    const targetName = document.getElementById("targetName");
+    const activeTargetCount = document.getElementById("activeTargetCount");
+    const targetCount = document.getElementById("targetCount");
+    const eventTotal = document.getElementById("eventTotal");
+    const scopeSelect = document.getElementById("scopeSelect");
+    const targetSelectWrap = document.getElementById("targetSelectWrap");
+    const targetSelect = document.getElementById("targetSelect");
+    const otherPetWrap = document.getElementById("otherPetWrap");
+    const eventPetInput = document.getElementById("eventPetInput");
+    const eventTypeSelect = document.getElementById("eventTypeSelect");
+    const shinyNightmareWrap = document.getElementById("shinyNightmareWrap");
+    const shinyNightmareInput = document.getElementById("shinyNightmareInput");
+    const addEventBtn = document.getElementById("addEventBtn");
+    const quickTargetActions = document.getElementById("quickTargetActions");
+    const targetDetailList = document.getElementById("targetDetailList");
+    const clearEventsBtn = document.getElementById("clearEventsBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const eventLogList = document.getElementById("eventLogList");
+    const shinyLogList = document.getElementById("shinyLogList");
+    const shinyTotal = document.getElementById("shinyTotal");
+    const targetNightmare = document.getElementById("targetNightmare");
+    const targetPollution = document.getElementById("targetPollution");
+    const targetNormal = document.getElementById("targetNormal");
+    const targetShiny = document.getElementById("targetShiny");
+    const otherNightmare = document.getElementById("otherNightmare");
+    const otherPollution = document.getElementById("otherPollution");
+    const otherNormal = document.getElementById("otherNormal");
+    const otherShiny = document.getElementById("otherShiny");
+    const quickOtherActions = document.getElementById("quickOtherActions");
+    const otherDetailList = document.getElementById("otherDetailList");
+    const completePlanBtn = document.getElementById("completePlanBtn");
+    const ballInput = document.getElementById("ballInput");
+    const addBallBtn = document.getElementById("addBallBtn");
+    const ballList = document.getElementById("ballList");
+    const ballEmptyTip = document.getElementById("ballEmptyTip");
+    const ballTotalAll = document.getElementById("ballTotalAll");
+    const clearBallsBtn = document.getElementById("clearBallsBtn");
+    const historyList = document.getElementById("historyList");
+    const importInput = document.createElement("input");
+    importInput.type = "file";
+    importInput.accept = "application/json,.json";
+    importInput.style.display = "none";
+    document.body.appendChild(importInput);
+
+    /** @type {{name: string, count: number}[]} */
+    let records = loadRecords();
+    /** @type {{targetPets: string[], activeTargets: string[], balls: { name: string, count: number }[], events: {id: string, pet: string, scope: "target" | "other", kind: "nightmare" | "pollution" | "normal" | "shiny", at: string, nightmareAtShiny: number | null}[]}} */
+    let eventState = loadEventState();
+    /** @type {{type: "add-event", eventId: string}[]} */
+    let undoStack = loadUndoStack();
+    /** @type {object[]} */
+    let sessionHistory = loadSessionHistory();
+
+    function loadRecords() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return [];
+            return parsed
+                .filter((item) => item && typeof item.name === "string")
+                .map((item) => ({
+                    name: item.name.trim(),
+                    count: Number.isFinite(item.count) && item.count > 0 ? Math.floor(item.count) : 0
+                }))
+                .filter((item) => item.name.length > 0);
+        } catch {
+            return [];
+        }
+    }
+
+    function saveRecords() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function loadEventState() {
+        try {
+            const raw = localStorage.getItem(EVENT_STORAGE_KEY);
+            if (!raw) return { targetPets: [], activeTargets: [], balls: [], events: [] };
+            const parsed = JSON.parse(raw);
+            const oldTargetPet = typeof parsed.targetPet === "string" ? parsed.targetPet.trim() : "";
+            const targetPets = Array.isArray(parsed.targetPets)
+                ? parsed.targetPets.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item.length > 0)
+                : (oldTargetPet ? [oldTargetPet] : []);
+            const oldActiveTarget = typeof parsed.activeTarget === "string" ? parsed.activeTarget.trim() : "";
+            const activeTargetsRaw = Array.isArray(parsed.activeTargets)
+                ? parsed.activeTargets.filter((item) => typeof item === "string").map((item) => item.trim())
+                : (oldActiveTarget ? [oldActiveTarget] : []);
+            const activeTargets = activeTargetsRaw.filter((name) => targetPets.includes(name));
+            const events = Array.isArray(parsed.events) ? parsed.events : [];
+            const normalized = events
+                .filter((item) => item && typeof item.pet === "string")
+                .map((item) => ({
+                    id: typeof item.id === "string" && item.id ? item.id : ("evt-" + Math.random().toString(36).slice(2, 10) + "-" + Date.now()),
+                    pet: item.pet.trim(),
+                    scope: item.scope === "other" ? "other" : "target",
+                    kind: ["nightmare", "pollution", "normal", "shiny"].includes(item.kind) ? item.kind : "normal",
+                    at: typeof item.at === "string" ? item.at : new Date().toISOString(),
+                    nightmareAtShiny: Number.isFinite(item.nightmareAtShiny) && item.nightmareAtShiny >= 0
+                        ? Math.floor(item.nightmareAtShiny)
+                        : null
+                }))
+                .filter((item) => item.pet.length > 0);
+            const rawBalls = Array.isArray(parsed.balls) ? parsed.balls : [];
+            const balls = rawBalls
+                .filter((item) => item && typeof item.name === "string")
+                .map((item) => ({
+                    name: item.name.trim(),
+                    count: Number.isFinite(item.count) && item.count > 0 ? Math.floor(item.count) : 0
+                }))
+                .filter((item) => item.name.length > 0);
+            return { targetPets, activeTargets, balls, events: normalized };
+        } catch {
+            return { targetPets: [], activeTargets: [], balls: [], events: [] };
+        }
+    }
+
+    function saveEventState() {
+        localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(eventState));
+    }
+
+    function ensureBalls() {
+        if (!Array.isArray(eventState.balls)) {
+            eventState.balls = [];
+        }
+    }
+
+    function renderBallPanel() {
+        ensureBalls();
+        const sum = eventState.balls.reduce((acc, item) => acc + item.count, 0);
+        ballTotalAll.textContent = String(sum);
+        ballList.innerHTML = "";
+        if (eventState.balls.length === 0) {
+            ballEmptyTip.style.display = "block";
+            return;
+        }
+        ballEmptyTip.style.display = "none";
+        eventState.balls.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.className = "item";
+            const nameEl = document.createElement("span");
+            nameEl.className = "name";
+            nameEl.textContent = item.name;
+            const countWrap = document.createElement("div");
+            countWrap.className = "field-wrap";
+            countWrap.style.minWidth = "0";
+            const countLabel = document.createElement("label");
+            countLabel.className = "field-label";
+            countLabel.setAttribute("for", "ball-count-" + index);
+            countLabel.textContent = "数量";
+            const countInput = document.createElement("input");
+            countInput.id = "ball-count-" + index;
+            countInput.type = "number";
+            countInput.min = "0";
+            countInput.step = "1";
+            countInput.value = String(item.count);
+            countInput.addEventListener("change", () => {
+                let v = parseInt(countInput.value, 10);
+                if (!Number.isFinite(v) || v < 0) {
+                    v = 0;
+                }
+                eventState.balls[index].count = v;
+                saveEventState();
+                renderEventModule();
+            });
+            countWrap.append(countLabel, countInput);
+            const actionsEl = document.createElement("div");
+            actionsEl.className = "actions";
+            const minusBtn = document.createElement("button");
+            minusBtn.className = "btn-minus";
+            minusBtn.textContent = "-";
+            minusBtn.addEventListener("click", () => {
+                if (eventState.balls[index].count > 0) {
+                    eventState.balls[index].count -= 1;
+                    saveEventState();
+                    renderEventModule();
+                }
+            });
+            const plusBtn = document.createElement("button");
+            plusBtn.className = "btn-plus";
+            plusBtn.textContent = "+";
+            plusBtn.addEventListener("click", () => {
+                eventState.balls[index].count += 1;
+                saveEventState();
+                renderEventModule();
+            });
+            actionsEl.append(minusBtn, plusBtn);
+            li.append(nameEl, countWrap, actionsEl);
+            ballList.appendChild(li);
+        });
+    }
+
+    function loadUndoStack() {
+        try {
+            const raw = localStorage.getItem(UNDO_STORAGE_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return [];
+            return parsed
+                .filter((item) => item && item.type === "add-event" && typeof item.eventId === "string")
+                .map((item) => ({ type: "add-event", eventId: item.eventId }));
+        } catch {
+            return [];
+        }
+    }
+
+    function saveUndoStack() {
+        localStorage.setItem(UNDO_STORAGE_KEY, JSON.stringify(undoStack));
+    }
+
+    function loadSessionHistory() {
+        try {
+            const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function saveSessionHistory() {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(sessionHistory));
+    }
+
+    /**
+     * @param {{ id: string, pet: string, scope: string, kind: string }[]} events
+     */
+    function computeAggregates(events) {
+        const stats = {
+            target: { nightmare: 0, pollution: 0, normal: 0, shiny: 0 },
+            other: { nightmare: 0, pollution: 0, normal: 0, shiny: 0 }
+        };
+        const targetByPet = {};
+        const otherByPet = {};
+
+        events.forEach((event) => {
+            stats[event.scope][event.kind] += 1;
+            if (event.scope === "target") {
+                if (!targetByPet[event.pet]) {
+                    targetByPet[event.pet] = { pollution: 0, normal: 0, shiny: 0, legacyNightmare: 0 };
+                }
+                if (event.kind === "nightmare") {
+                    targetByPet[event.pet].legacyNightmare += 1;
+                } else {
+                    targetByPet[event.pet][event.kind] += 1;
+                }
+            }
+            if (event.scope === "other") {
+                if (!otherByPet[event.pet]) {
+                    otherByPet[event.pet] = { pollution: 0, normal: 0, shiny: 0, legacyNightmare: 0 };
+                }
+                if (event.kind === "nightmare") {
+                    otherByPet[event.pet].legacyNightmare += 1;
+                } else {
+                    otherByPet[event.pet][event.kind] += 1;
+                }
+            }
+        });
+
+        const targetLegacyNightmare = stats.target.nightmare;
+        const otherLegacyNightmare = stats.other.nightmare;
+        stats.target.nightmare = stats.target.pollution + stats.target.normal + targetLegacyNightmare;
+        stats.other.nightmare = stats.other.pollution + stats.other.normal + otherLegacyNightmare;
+
+        return { stats, targetByPet, otherByPet };
+    }
+
+    function renderHistory() {
+        historyList.innerHTML = "";
+        if (sessionHistory.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "empty";
+            empty.textContent = "暂无历史记录。完成一轮捕捉后点击「本次捕捉计划完成」即可归档。";
+            historyList.appendChild(empty);
+            return;
+        }
+
+        sessionHistory.forEach((entry, index) => {
+            const card = document.createElement("div");
+            card.className = "history-card";
+            const title = document.createElement("h3");
+            title.textContent = "第 " + (sessionHistory.length - index) + " 轮";
+            const meta = document.createElement("div");
+            meta.className = "history-meta";
+            const d = new Date(entry.completedAt);
+            const timeText = Number.isNaN(d.getTime()) ? String(entry.completedAt) : d.toLocaleString();
+            meta.textContent = "归档时间：" + timeText
+                + "　总事件：" + (entry.totalEvents != null ? entry.totalEvents : "—")
+                + "　主刷列表：" + (Array.isArray(entry.targetPetsSnapshot) && entry.targetPetsSnapshot.length ? entry.targetPetsSnapshot.join("、") : "—")
+                + "　当前主刷：" + (Array.isArray(entry.activeTargetsSnapshot) && entry.activeTargetsSnapshot.length ? entry.activeTargetsSnapshot.join("、") : "—");
+            card.append(title, meta);
+
+            const totals = entry.totals;
+            if (totals && totals.target && totals.other) {
+                const sumRow = document.createElement("div");
+                sumRow.className = "sub-grid";
+                sumRow.innerHTML =
+                    "<div class=\"tiny-card\">主刷-噩梦（自动）：<strong>" + totals.target.nightmare + "</strong></div>"
+                    + "<div class=\"tiny-card\">主刷-污染：<strong>" + totals.target.pollution + "</strong></div>"
+                    + "<div class=\"tiny-card\">主刷-普通：<strong>" + totals.target.normal + "</strong></div>"
+                    + "<div class=\"tiny-card\">主刷-异色：<strong>" + totals.target.shiny + "</strong></div>"
+                    + "<div class=\"tiny-card\">其他-噩梦（自动）：<strong>" + totals.other.nightmare + "</strong></div>"
+                    + "<div class=\"tiny-card\">其他-污染：<strong>" + totals.other.pollution + "</strong></div>"
+                    + "<div class=\"tiny-card\">其他-普通：<strong>" + totals.other.normal + "</strong></div>"
+                    + "<div class=\"tiny-card\">其他-异色：<strong>" + totals.other.shiny + "</strong></div>";
+                card.appendChild(sumRow);
+            }
+
+            const targetTitle = document.createElement("p");
+            targetTitle.className = "stat-title";
+            targetTitle.style.marginTop = "10px";
+            targetTitle.textContent = "主刷明细（按宠物）";
+            card.appendChild(targetTitle);
+            const targetBox = document.createElement("div");
+            targetBox.className = "other-detail-list";
+            const tbp = entry.targetByPet || {};
+            const tNames = Object.keys(tbp).sort((a, b) => a.localeCompare(b, "zh-CN"));
+            if (tNames.length === 0) {
+                const line = document.createElement("div");
+                line.className = "tiny-card";
+                line.textContent = "无主刷明细。";
+                targetBox.appendChild(line);
+            } else {
+                tNames.forEach((pet) => {
+                    const s = tbp[pet];
+                    const nightmareAuto = (s.pollution || 0) + (s.normal || 0) + (s.legacyNightmare || 0);
+                    const line = document.createElement("div");
+                    line.className = "tiny-card";
+                    line.textContent = pet + "：噩梦 " + nightmareAuto + "（污染 " + (s.pollution || 0) + " / 普通 " + (s.normal || 0) + "），异色 " + (s.shiny || 0);
+                    targetBox.appendChild(line);
+                });
+            }
+            card.appendChild(targetBox);
+
+            const otherTitle = document.createElement("p");
+            otherTitle.className = "stat-title";
+            otherTitle.style.marginTop = "10px";
+            otherTitle.textContent = "其他明细（按宠物）";
+            card.appendChild(otherTitle);
+            const otherBox = document.createElement("div");
+            otherBox.className = "other-detail-list";
+            const obp = entry.otherByPet || {};
+            const oNames = Object.keys(obp).sort((a, b) => a.localeCompare(b, "zh-CN"));
+            if (oNames.length === 0) {
+                const line = document.createElement("div");
+                line.className = "tiny-card";
+                line.textContent = "无其他宠物明细。";
+                otherBox.appendChild(line);
+            } else {
+                oNames.forEach((pet) => {
+                    const s = obp[pet];
+                    const nightmareAuto = (s.pollution || 0) + (s.normal || 0) + (s.legacyNightmare || 0);
+                    const line = document.createElement("div");
+                    line.className = "tiny-card";
+                    line.textContent = pet + "：噩梦 " + nightmareAuto + "（污染 " + (s.pollution || 0) + " / 普通 " + (s.normal || 0) + "），异色 " + (s.shiny || 0);
+                    otherBox.appendChild(line);
+                });
+            }
+            card.appendChild(otherBox);
+
+            const ballsSnap = entry.ballsSnapshot;
+            if (Array.isArray(ballsSnap) && ballsSnap.length > 0) {
+                const ballTitle = document.createElement("p");
+                ballTitle.className = "stat-title";
+                ballTitle.style.marginTop = "10px";
+                ballTitle.textContent = "用球记录";
+                card.appendChild(ballTitle);
+                const ballBox = document.createElement("div");
+                ballBox.className = "other-detail-list";
+                const ballSum = ballsSnap.reduce((acc, b) => acc + (Number(b.count) || 0), 0);
+                const sumLine = document.createElement("div");
+                sumLine.className = "tiny-card";
+                sumLine.textContent = "用球合计：" + ballSum;
+                ballBox.appendChild(sumLine);
+                ballsSnap
+                    .filter((b) => b && typeof b.name === "string")
+                    .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"))
+                    .forEach((b) => {
+                        const line = document.createElement("div");
+                        line.className = "tiny-card";
+                        line.textContent = b.name + "：" + (Number(b.count) || 0) + " 个";
+                        ballBox.appendChild(line);
+                    });
+                card.appendChild(ballBox);
+            }
+
+            historyList.appendChild(card);
+        });
+    }
+
+    function renderStats() {
+        const total = records.reduce((sum, item) => sum + item.count, 0);
+        typeCount.textContent = String(records.length);
+        totalCount.textContent = String(total);
+    }
+
+    function labelKind(kind) {
+        if (kind === "nightmare") return "噩梦";
+        if (kind === "pollution") return "污染";
+        if (kind === "shiny") return "异色突发";
+        return "普通";
+    }
+
+    function createEventId() {
+        return "evt-" + Math.random().toString(36).slice(2, 10) + "-" + Date.now();
+    }
+
+    function appendEvent(payload) {
+        const event = {
+            id: createEventId(),
+            ...payload
+        };
+        eventState.events.push(event);
+        undoStack.push({ type: "add-event", eventId: event.id });
+        saveEventState();
+        saveUndoStack();
+        renderEventModule();
+    }
+
+    function syncEventFormUI() {
+        const isTargetScope = scopeSelect.value === "target";
+        const isShiny = eventTypeSelect.value === "shiny";
+        targetSelectWrap.classList.toggle("hidden", !isTargetScope);
+        otherPetWrap.classList.toggle("hidden", isTargetScope);
+        shinyNightmareWrap.classList.toggle("hidden", !isShiny);
+        targetSelect.disabled = !isTargetScope;
+        eventPetInput.disabled = isTargetScope;
+    }
+
+    function renderEventModule() {
+        targetName.textContent = eventState.activeTargets.length > 0 ? eventState.activeTargets.join("、") : "未设置";
+        activeTargetCount.textContent = String(eventState.activeTargets.length);
+        targetCount.textContent = String(eventState.targetPets.length);
+        eventTotal.textContent = String(eventState.events.length);
+        eventPetInput.placeholder = "请输入其他宠物名称";
+
+        renderBallPanel();
+
+        targetSelect.innerHTML = "";
+        const targetOptions = eventState.activeTargets.length > 0 ? eventState.activeTargets : eventState.targetPets;
+        if (targetOptions.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "暂无主刷宠物，请先添加";
+            targetSelect.appendChild(option);
+        } else {
+            targetOptions.forEach((pet) => {
+                const option = document.createElement("option");
+                option.value = pet;
+                option.textContent = pet;
+                targetSelect.appendChild(option);
+            });
+            targetSelect.value = targetOptions[0];
+        }
+        syncEventFormUI();
+
+        targetList.innerHTML = "";
+        if (eventState.targetPets.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "log-item";
+            empty.textContent = "还没有主刷宠物，先添加一个。";
+            targetList.appendChild(empty);
+        } else {
+            eventState.targetPets.forEach((pet) => {
+                const pill = document.createElement("div");
+                pill.className = "target-pill";
+                const label = document.createElement("span");
+                const isActive = eventState.activeTargets.includes(pet);
+                label.textContent = pet + (isActive ? "（当前）" : "");
+                const switchBtn = document.createElement("button");
+                switchBtn.className = "btn-main";
+                switchBtn.textContent = isActive ? "移出当前" : "设为当前";
+                switchBtn.addEventListener("click", () => {
+                    if (eventState.activeTargets.includes(pet)) {
+                        eventState.activeTargets = eventState.activeTargets.filter((name) => name !== pet);
+                    } else {
+                        eventState.activeTargets.push(pet);
+                    }
+                    saveEventState();
+                    renderEventModule();
+                });
+                const removeBtn = document.createElement("button");
+                removeBtn.className = "btn-minus";
+                removeBtn.textContent = "删除";
+                removeBtn.addEventListener("click", () => {
+                    eventState.targetPets = eventState.targetPets.filter((name) => name !== pet);
+                    eventState.activeTargets = eventState.activeTargets.filter((name) => name !== pet);
+                    saveEventState();
+                    renderEventModule();
+                });
+                pill.append(label, switchBtn, removeBtn);
+                targetList.appendChild(pill);
+            });
+        }
+
+        quickTargetActions.innerHTML = "";
+        if (eventState.activeTargets.length === 0) {
+            const emptyQuick = document.createElement("div");
+            emptyQuick.className = "log-item";
+            emptyQuick.textContent = "暂无当前主刷，先在上面把宠物设为“当前”。";
+            quickTargetActions.appendChild(emptyQuick);
+        } else {
+            eventState.activeTargets.forEach((pet) => {
+                const row = document.createElement("div");
+                row.className = "quick-row";
+                const label = document.createElement("strong");
+                label.textContent = pet;
+                row.appendChild(label);
+
+                const addQuickBtn = (text, kind) => {
+                    const btn = document.createElement("button");
+                    btn.className = "btn-main quick-btn";
+                    btn.textContent = text + " +1";
+                    btn.addEventListener("click", () => {
+                        appendEvent({
+                            pet,
+                            scope: "target",
+                            kind,
+                            at: new Date().toISOString(),
+                            nightmareAtShiny: null
+                        });
+                    });
+                    row.appendChild(btn);
+                };
+
+                addQuickBtn("污染", "pollution");
+                addQuickBtn("普通", "normal");
+                addQuickBtn("异色", "shiny");
+                quickTargetActions.appendChild(row);
+            });
+        }
+
+        const { stats, targetByPet, otherByPet } = computeAggregates(eventState.events);
+
+        targetNightmare.textContent = String(stats.target.nightmare);
+        targetPollution.textContent = String(stats.target.pollution);
+        targetNormal.textContent = String(stats.target.normal);
+        targetShiny.textContent = String(stats.target.shiny);
+        otherNightmare.textContent = String(stats.other.nightmare);
+        otherPollution.textContent = String(stats.other.pollution);
+        otherNormal.textContent = String(stats.other.normal);
+        otherShiny.textContent = String(stats.other.shiny);
+
+        quickOtherActions.innerHTML = "";
+        const quickOtherPetNames = Object.keys(otherByPet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        if (quickOtherPetNames.length === 0) {
+            const emptyQuickOther = document.createElement("div");
+            emptyQuickOther.className = "log-item";
+            emptyQuickOther.textContent = "还没有刷出过其他宠物，先用上面的“记录场景=其他宠物”记一条后，这里会自动出现快捷按钮。";
+            quickOtherActions.appendChild(emptyQuickOther);
+        } else {
+            quickOtherPetNames.forEach((pet) => {
+                const row = document.createElement("div");
+                row.className = "quick-row";
+                const label = document.createElement("strong");
+                label.textContent = pet;
+                row.appendChild(label);
+
+                const addQuickBtn = (text, kind) => {
+                    const btn = document.createElement("button");
+                    btn.className = "btn-main quick-btn";
+                    btn.textContent = text + " +1";
+                    btn.addEventListener("click", () => {
+                        appendEvent({
+                            pet,
+                            scope: "other",
+                            kind,
+                            at: new Date().toISOString(),
+                            nightmareAtShiny: null
+                        });
+                    });
+                    row.appendChild(btn);
+                };
+
+                addQuickBtn("污染", "pollution");
+                addQuickBtn("普通", "normal");
+                addQuickBtn("异色", "shiny");
+                quickOtherActions.appendChild(row);
+            });
+        }
+
+        targetDetailList.innerHTML = "";
+        const targetPetNames = Object.keys(targetByPet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        if (targetPetNames.length === 0) {
+            const emptyTargetDetail = document.createElement("div");
+            emptyTargetDetail.className = "tiny-card";
+            emptyTargetDetail.textContent = "暂无主刷宠物明细。";
+            targetDetailList.appendChild(emptyTargetDetail);
+        } else {
+            targetPetNames.forEach((pet) => {
+                const item = document.createElement("div");
+                item.className = "tiny-card";
+                const s = targetByPet[pet];
+                const nightmareAuto = s.pollution + s.normal + s.legacyNightmare;
+                item.textContent = pet + "：噩梦 " + nightmareAuto + "（污染 " + s.pollution + " / 普通 " + s.normal + "）"
+                    + "，异色 " + s.shiny;
+                targetDetailList.appendChild(item);
+            });
+        }
+
+        otherDetailList.innerHTML = "";
+        const otherPetNames = Object.keys(otherByPet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        if (otherPetNames.length === 0) {
+            const emptyDetail = document.createElement("div");
+            emptyDetail.className = "tiny-card";
+            emptyDetail.textContent = "暂无其他宠物明细。";
+            otherDetailList.appendChild(emptyDetail);
+        } else {
+            otherPetNames.forEach((pet) => {
+                const item = document.createElement("div");
+                item.className = "tiny-card";
+                const s = otherByPet[pet];
+                const nightmareAuto = s.pollution + s.normal + s.legacyNightmare;
+                item.textContent = pet + "：噩梦 " + nightmareAuto + "（污染 " + s.pollution + " / 普通 " + s.normal + "）"
+                    + "，异色 " + s.shiny;
+                otherDetailList.appendChild(item);
+            });
+        }
+
+        shinyLogList.innerHTML = "";
+        const shinyEvents = eventState.events.filter((event) => event.kind === "shiny");
+        shinyTotal.textContent = String(shinyEvents.length);
+        if (shinyEvents.length === 0) {
+            const emptyShiny = document.createElement("div");
+            emptyShiny.className = "log-item";
+            emptyShiny.textContent = "暂无异色突发记录。";
+            shinyLogList.appendChild(emptyShiny);
+        } else {
+            shinyEvents.slice(-20).reverse().forEach((event) => {
+                const item = document.createElement("div");
+                item.className = "log-item";
+                const d = new Date(event.at);
+                const timeText = Number.isNaN(d.getTime()) ? "未知时间" : d.toLocaleString();
+                const scopeText = event.scope === "target" ? "主刷" : "其他";
+                const extra = event.nightmareAtShiny === null ? "" : "，当时噩梦次数：" + event.nightmareAtShiny;
+                item.textContent = "[" + scopeText + "] " + event.pet + " - 异色突发" + extra + "（" + timeText + "）";
+                shinyLogList.appendChild(item);
+            });
+        }
+
+        eventLogList.innerHTML = "";
+        const latest = eventState.events.slice(-40).reverse();
+        if (latest.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "log-item";
+            empty.textContent = "暂无事件记录。";
+            eventLogList.appendChild(empty);
+            return;
+        }
+
+        latest.forEach((event) => {
+            const item = document.createElement("div");
+            item.className = "log-item";
+            const d = new Date(event.at);
+            const timeText = Number.isNaN(d.getTime()) ? "未知时间" : d.toLocaleString();
+            const scopeText = event.scope === "target" ? "主刷" : "其他";
+            const extra = event.kind === "shiny" && event.nightmareAtShiny !== null
+                ? "（噩梦次数：" + event.nightmareAtShiny + "）"
+                : "";
+            item.textContent = "[" + scopeText + "] " + event.pet + " - " + labelKind(event.kind) + extra + "（" + timeText + "）";
+            eventLogList.appendChild(item);
+        });
+    }
+
+    clearBtn.addEventListener("click", () => {
+        if (records.length === 0) return;
+        const yes = window.confirm("确认清空全部污染记录吗？");
+        if (!yes) return;
+        records = [];
+        saveRecords();
+        renderStats();
+    });
+
+    setTargetBtn.addEventListener("click", () => {
+        const raw = targetInput.value.trim();
+        if (!raw) {
+            window.alert("请输入主刷宠物名称，可用逗号分隔多个。");
+            return;
+        }
+        const names = raw
+            .split(/[，,、\n]+/)
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+        if (names.length === 0) {
+            window.alert("没有识别到有效宠物名称。");
+            return;
+        }
+        names.forEach((name) => {
+            if (!eventState.targetPets.includes(name)) {
+                eventState.targetPets.push(name);
+            }
+            if (!eventState.activeTargets.includes(name)) {
+                eventState.activeTargets.push(name);
+            }
+        });
+        targetInput.value = "";
+        saveEventState();
+        renderEventModule();
+    });
+
+    addBallBtn.addEventListener("click", () => {
+        const raw = ballInput.value.trim();
+        if (!raw) {
+            window.alert("请输入球种名称，可用逗号分隔多个。");
+            return;
+        }
+        const names = raw
+            .split(/[，,、\n]+/)
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+        if (names.length === 0) {
+            window.alert("没有识别到有效球种名称。");
+            return;
+        }
+        ensureBalls();
+        names.forEach((name) => {
+            const existed = eventState.balls.find((item) => item.name === name);
+            if (existed) {
+                existed.count += 1;
+            } else {
+                eventState.balls.push({ name, count: 1 });
+            }
+        });
+        ballInput.value = "";
+        saveEventState();
+        renderEventModule();
+    });
+
+    clearBallsBtn.addEventListener("click", () => {
+        ensureBalls();
+        if (eventState.balls.length === 0) return;
+        const yes = window.confirm("确认清空用球记录吗？");
+        if (!yes) return;
+        eventState.balls = [];
+        saveEventState();
+        renderEventModule();
+    });
+
+    ballInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            addBallBtn.click();
+        }
+    });
+
+    targetSelect.addEventListener("change", () => {
+        // 仅作为记录目标选择，不改动当前主刷集合。
+    });
+
+    scopeSelect.addEventListener("change", () => {
+        syncEventFormUI();
+    });
+
+    eventTypeSelect.addEventListener("change", () => {
+        syncEventFormUI();
+    });
+
+    addEventBtn.addEventListener("click", () => {
+        const scope = scopeSelect.value === "other" ? "other" : "target";
+        const kind = ["pollution", "normal", "shiny"].includes(eventTypeSelect.value)
+            ? eventTypeSelect.value
+            : "normal";
+        const nightmareValue = Number(shinyNightmareInput.value);
+        const nightmareAtShiny = kind === "shiny" && Number.isFinite(nightmareValue) && nightmareValue >= 0
+            ? Math.floor(nightmareValue)
+            : null;
+        const typedName = eventPetInput.value.trim();
+        const pet = scope === "target"
+            ? targetSelect.value.trim()
+            : typedName;
+
+        if (!pet) {
+            window.alert(scope === "target" ? "请先添加并选择主刷宠物。" : "请填写其他宠物名称。");
+            return;
+        }
+
+        appendEvent({
+            pet,
+            scope,
+            kind,
+            at: new Date().toISOString(),
+            nightmareAtShiny
+        });
+        eventPetInput.value = "";
+        shinyNightmareInput.value = "";
+    });
+
+    undoBtn.addEventListener("click", () => {
+        if (undoStack.length === 0) {
+            window.alert("没有可撤回的操作。");
+            return;
+        }
+        const last = undoStack.pop();
+        saveUndoStack();
+        if (last.type === "add-event") {
+            const beforeLen = eventState.events.length;
+            eventState.events = eventState.events.filter((item) => item.id !== last.eventId);
+            if (eventState.events.length === beforeLen) {
+                window.alert("上一条记录已不存在，无法撤回。");
+                return;
+            }
+            saveEventState();
+            renderEventModule();
+        }
+    });
+
+    clearEventsBtn.addEventListener("click", () => {
+        if (eventState.events.length === 0) return;
+        const yes = window.confirm("确认清空异色追踪事件吗？");
+        if (!yes) return;
+        eventState.events = [];
+        undoStack = [];
+        saveEventState();
+        saveUndoStack();
+        renderEventModule();
+    });
+
+    completePlanBtn.addEventListener("click", () => {
+        ensureBalls();
+        const ballSum = eventState.balls.reduce((acc, item) => acc + item.count, 0);
+        if (eventState.events.length === 0 && ballSum === 0) {
+            window.alert("当前还没有事件记录，也没有用球记录，无法归档。");
+            return;
+        }
+        const yes = window.confirm("确认完成本轮捕捉计划吗？当前主刷/其他统计、用球记录与明细将保存到历史记录，并清空本轮事件、用球与撤回栈（主刷宠物列表会保留）。");
+        if (!yes) return;
+
+        const { stats, targetByPet, otherByPet } = computeAggregates(eventState.events);
+        const snapshot = {
+            id: "hist-" + Math.random().toString(36).slice(2, 10) + "-" + Date.now(),
+            completedAt: new Date().toISOString(),
+            totalEvents: eventState.events.length,
+            targetPetsSnapshot: [...eventState.targetPets],
+            activeTargetsSnapshot: [...eventState.activeTargets],
+            totals: {
+                target: { ...stats.target },
+                other: { ...stats.other }
+            },
+            targetByPet: JSON.parse(JSON.stringify(targetByPet)),
+            otherByPet: JSON.parse(JSON.stringify(otherByPet)),
+            ballsSnapshot: JSON.parse(JSON.stringify(eventState.balls))
+        };
+        sessionHistory.unshift(snapshot);
+        if (sessionHistory.length > 50) {
+            sessionHistory.length = 50;
+        }
+        saveSessionHistory();
+
+        eventState.events = [];
+        eventState.balls = [];
+        undoStack = [];
+        saveEventState();
+        saveUndoStack();
+        renderEventModule();
+        renderHistory();
+        window.alert("已归档到历史记录，可以开始新一轮计数。");
+    });
+
+    clearCacheBtn.addEventListener("click", () => {
+        const yes = window.confirm("确认清理本地缓存吗？这会删除本页保存的记录、撤回历史与捕捉计划历史。");
+        if (!yes) return;
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(EVENT_STORAGE_KEY);
+        localStorage.removeItem(UNDO_STORAGE_KEY);
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+        records = [];
+        eventState = { targetPets: [], activeTargets: [], balls: [], events: [] };
+        undoStack = [];
+        sessionHistory = [];
+        renderStats();
+        renderEventModule();
+        renderHistory();
+        window.alert("本地缓存已清理。");
+    });
+
+    exportBtn.addEventListener("click", () => {
+        const payload = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            records,
+            eventState,
+            sessionHistory
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = "pollution-tracker-backup-" + dateStr + ".json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    });
+
+    importBtn.addEventListener("click", () => {
+        importInput.value = "";
+        importInput.click();
+    });
+
+    importInput.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            const candidate = Array.isArray(parsed) ? parsed : parsed.records;
+            if (!Array.isArray(candidate)) {
+                throw new Error("备份格式不正确");
+            }
+            const next = candidate
+                .filter((item) => item && typeof item.name === "string")
+                .map((item) => ({
+                    name: item.name.trim(),
+                    count: Number.isFinite(item.count) && item.count > 0 ? Math.floor(item.count) : 0
+                }))
+                .filter((item) => item.name.length > 0);
+            records = next;
+            if (parsed && typeof parsed === "object" && parsed.eventState) {
+                const maybeEventState = parsed.eventState;
+                if (typeof maybeEventState === "object") {
+                    const rawTarget = typeof maybeEventState.targetPet === "string" ? maybeEventState.targetPet.trim() : "";
+                    const rawTargets = Array.isArray(maybeEventState.targetPets)
+                        ? maybeEventState.targetPets.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item.length > 0)
+                        : (rawTarget ? [rawTarget] : []);
+                    const rawActive = typeof maybeEventState.activeTarget === "string" ? maybeEventState.activeTarget.trim() : "";
+                    const rawActiveTargets = Array.isArray(maybeEventState.activeTargets)
+                        ? maybeEventState.activeTargets.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item.length > 0)
+                        : (rawActive ? [rawActive] : []);
+                    const rawEvents = Array.isArray(maybeEventState.events) ? maybeEventState.events : [];
+                    const rawBalls = Array.isArray(maybeEventState.balls) ? maybeEventState.balls : [];
+                    const balls = rawBalls
+                        .filter((item) => item && typeof item.name === "string")
+                        .map((item) => ({
+                            name: item.name.trim(),
+                            count: Number.isFinite(item.count) && item.count > 0 ? Math.floor(item.count) : 0
+                        }))
+                        .filter((item) => item.name.length > 0);
+                    eventState = {
+                        targetPets: rawTargets,
+                        activeTargets: rawActiveTargets.filter((name) => rawTargets.includes(name)),
+                        balls,
+                        events: rawEvents
+                            .filter((item) => item && typeof item.pet === "string")
+                            .map((item) => ({
+                                id: typeof item.id === "string" && item.id ? item.id : ("evt-" + Math.random().toString(36).slice(2, 10) + "-" + Date.now()),
+                                pet: item.pet.trim(),
+                                scope: item.scope === "other" ? "other" : "target",
+                                kind: ["nightmare", "pollution", "normal", "shiny"].includes(item.kind) ? item.kind : "normal",
+                                at: typeof item.at === "string" ? item.at : new Date().toISOString(),
+                                nightmareAtShiny: Number.isFinite(item.nightmareAtShiny) && item.nightmareAtShiny >= 0
+                                    ? Math.floor(item.nightmareAtShiny)
+                                    : null
+                            }))
+                            .filter((item) => item.pet.length > 0)
+                    };
+                }
+            }
+            saveRecords();
+            saveEventState();
+            undoStack = [];
+            saveUndoStack();
+            if (parsed && typeof parsed === "object" && Object.prototype.hasOwnProperty.call(parsed, "sessionHistory")) {
+                sessionHistory = Array.isArray(parsed.sessionHistory)
+                    ? parsed.sessionHistory.filter((item) => item && typeof item === "object")
+                    : [];
+                saveSessionHistory();
+            }
+            renderStats();
+            renderEventModule();
+            renderHistory();
+            window.alert("导入成功，已应用备份数据。");
+        } catch (error) {
+            window.alert("导入失败：JSON 文件无效或格式不匹配。");
+        }
+    });
+
+    renderStats();
+    renderEventModule();
+    renderHistory();
+    syncEventFormUI();
+</script>
+</body>
+</html>

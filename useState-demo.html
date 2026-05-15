@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>useState 演示页面</title>
+    <style>
+        :root {
+            --bg: linear-gradient(180deg, #fff7fd 0%, #f3f7ff 100%);
+            --card: rgba(255, 255, 255, 0.9);
+            --text: #4b3b5f;
+            --muted: #8d7ba5;
+            --primary: #ff6fb5;
+            --primary-deep: #f556a7;
+            --secondary: #8b7cff;
+            --danger: #ff6b88;
+            --border: #f2dff0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 32px auto;
+            padding: 0 16px 40px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+            letter-spacing: 0.3px;
+        }
+
+        .desc {
+            margin: 0 0 12px;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 10px 28px rgba(190, 153, 228, 0.16);
+            backdrop-filter: blur(3px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card.input-center {
+            min-height: 230px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(190, 153, 228, 0.22);
+        }
+
+        .card h2 {
+            margin: 0 0 12px;
+            font-size: 18px;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-top:8px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            margin-top: 60px;
+        }
+
+        .status-active {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .counter-row {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .counter-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+
+        .count {
+            display: inline-block;
+            min-width: 64px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            background: #fff0f8;
+            border: 1px solid #ffd6ea;
+            border-radius: 999px;
+            padding: 4px 12px;
+            margin-top: 20px;
+        }
+
+        button, input {
+            font: inherit;
+        }
+
+        button {
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+            color: #fff;
+            padding: 8px 13px;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(245, 86, 167, 0.24);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(245, 86, 167, 0.28);
+        }
+
+        button:active {
+            transform: translateY(0);
+            opacity: 0.92;
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #a99cff 0%, var(--secondary) 100%);
+            box-shadow: 0 8px 16px rgba(139, 124, 255, 0.24);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff8fa7 0%, var(--danger) 100%);
+            box-shadow: 0 8px 16px rgba(255, 107, 136, 0.24);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            border: 1px solid var(--border);
+            padding: 9px 10px;
+            border-radius: 12px;
+            outline: none;
+            background: #fff;
+            color: var(--text);
+        }
+
+        input[type="text"]:focus {
+            border-color: #f7a8ce;
+            box-shadow: 0 0 0 3px rgba(247, 168, 206, 0.28);
+        }
+
+        ul {
+            margin: 12px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: #fff9fd;
+        }
+
+        .tips {
+            margin-top: 24px;
+            color: var(--muted);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px dashed #f3cde6;
+            padding: 10px 12px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+    const { useState } = React;
+
+    function CounterDemo() {
+        const [count, setCount] = useState(0);
+        return (
+            <div className="card">
+                <h2>(1) 计数器（数字类型） </h2>
+                <div className="row counter-row">
+                    <span className="count">{count}</span>
+                    <div className="counter-actions">
+                        <button onClick={() => setCount(c => c + 1)}>加1</button>
+                        <button onClick={() => setCount(c => c - 1)}>减1</button>
+                        <button className="secondary" onClick={() => setCount(0)}>重置</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    function InputMirrorDemo() {
+        const [text, setText] = useState("");
+        return (
+            <div className="card">
+                <h2>(2) 输入框联动（字符串类型）</h2>
+                <p className="desc">当前 text：{text || "（空）"}</p>
+                <input
+                    type="text"
+                    placeholder="输入任意内容"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                />
+                
+                <div className="row">
+                    <button onClick={() => setText("修改后的文本")}>修改文本</button>
+                    <button className="secondary" onClick={() => setText("")}>清空文本</button>
+                    <button onClick={() => setText(text + " → 追加内容")}>追加内容</button>
+                </div>
+            </div>
+        );
+    }
+
+    function BooleanStateDemo() {
+        const [isActive, setIsActive] = useState(false);
+        return (
+            <div className="card">
+                <h2>(3) 布尔开关（布尔类型）</h2>
+                <div className="status-row">
+                    <p className={`desc ${isActive ? "status-active" : ""}`}>
+                        当前状态：{isActive ? "已激活" : "未激活"}
+                    </p>
+                    <button
+                        className={isActive ? "secondary" : ""}
+                        onClick={() => setIsActive(prev => !prev)}
+                    >
+                        {isActive ? "取消激活" : "激活"}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    function TodoDemo() {
+        const [task, setTask] = useState("");
+        const [list, setList] = useState(["学习 useState"]);
+
+        const addTask = () => {
+            const value = task.trim();
+            if (!value) return;
+            setList([...list, value]);
+            setTask("");
+        };
+
+        const removeTask = (index) => {
+            setList(list.filter((_, i) => i !== index));
+        };
+
+        return (
+            <div className="card">
+                <h2>(4) 列表增删（数组类型）🐰</h2>
+                <div className="row">
+                    <input
+                        type="text"
+                        placeholder="新增任务"
+                        value={task}
+                        onChange={(e) => setTask(e.target.value)}
+                    />
+                    <button onClick={addTask}>添加</button>
+                </div>
+                <ul>
+                    {list.map((item, i) => (
+                        <li key={`${item}-${i}`}>
+                            <span>{item}</span>
+                            <button className="danger" onClick={() => removeTask(i)}>删除</button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    function App() {
+        return (
+            <div className="container">
+                <h1>React `useState` ✨</h1>
+                <p className="desc">展示 4 种最常见的状态管理场景。</p>
+                <div className="grid">
+                    <CounterDemo />
+                    <InputMirrorDemo />
+                    <BooleanStateDemo />
+                    <TodoDemo />
+                </div>
+                <p className="tips">
+                    提示：`useState(初始值)` 返回 `[状态值, 修改函数]`。调用修改函数后，组件会重新渲染。
+                </p>
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+</script>
+</body>
+</html>
